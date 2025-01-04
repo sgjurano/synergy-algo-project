@@ -13,6 +13,7 @@ class Config
         reload();
     }
 
+    // Перечитать файл конфигурации
     void reload()
     {
         std::ifstream fin(project_path + "settings.json");
@@ -20,6 +21,7 @@ class Config
         fin.close();
     }
 
+    // Оператор переопределён для запрета изменений объекта config
     auto operator()(const string &setting_dir, const string &setting_name) const
     {
         return config[setting_dir][setting_name];
