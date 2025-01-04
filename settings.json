@@ -1,20 +1,19 @@
 {
-    // настройки размера экрана 
     "WindowSize": {
-        "Width": 0, // ширина окна
-        "Hight": 0 // высота окна
+        "Width": 0,
+        "Hight": 0
     },
     "Bot": {
-        "IsWhiteBot": true,  // белый игрок - бот?
-        "IsBlackBot": true,  // чёрный игрок - бот?
-        "WhiteBotLevel": 0,  // уровень сложность белого бота  
-        "BlackBotLevel": 5,  // уровень сложности чёрного бота
-        "BotScoringType": "NumberAndPotential",  // алгоритм подсчёта скора
-        "BotDelayMS": 0,  // задержка перед ходом бота
-        "NoRandom": false,  // включена ли рандомизация
-        "Optimization": "O1"  // оптимизация для alpha-beta pruning
+        "IsWhiteBot": false,
+        "IsBlackBot": true,
+        "WhiteBotLevel": 0,
+        "BlackBotLevel": 5,
+        "BotScoringType": "NumberAndPotential",
+        "BotDelayMS": 0,
+        "NoRandom": false,
+        "Optimization": "O1"
     },
     "Game": {
-        "MaxNumTurns": 120  // максимальное число ходов
+        "MaxNumTurns": 120
     }
 }

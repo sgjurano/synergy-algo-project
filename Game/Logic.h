@@ -19,8 +19,33 @@ class Logic
         optimization = (*config)("Bot", "Optimization");
     }
 
+    // Основная функция поиска лучших ходов для заданного цвета
     vector<move_pos> find_best_turns(const bool color)
     {
+        double alpha = -INF; // Начальное значение альфы (alpha) для алгоритма альфа-бета отсечения
+        double beta = INF;   // Начальное значение беты (beta) для альфа-бета отсечения
+        double best_score = -INF; // Лучший найденный результат (оценка)
+        vector<move_pos> best_turns; // Вектор для хранения лучших найденных ходов
+        vector<vector<POS_T>> board_state = board->get_board(); // Получение текущего состояния доски
+
+        // Перебор всех возможных ходов для текущего игрока
+        for (auto& turn : turns) {
+            // Обновление доски для текущего потенциального хода
+            auto new_state = make_turn(board_state, turn);
+            // Рекурсивный поиск с максимальной глубиной
+            double score = find_best_turns_rec(new_state, !color, 0, alpha, beta);
+            // Обновление лучшего результата и ходов, если новый результат лучше
+            if (score > best_score) {
+                best_score = score;
+                best_turns.clear();
+                best_turns.push_back(turn);
+            } else if (score == best_score) {
+                best_turns.push_back(turn); // Добавление в список ходов с одинаковой оценкой
+            }
+            // Обновление альфы для отсечения
+            alpha = max(alpha, score);
+        }
+        return best_turns; // Возвращаем лучшие найденные ходы
     }
 
 private:
@@ -88,14 +113,50 @@ private:
         return (b + bq * q_coef) / (w + wq * q_coef);
     }
 
+    // Функция для поиска лучшего первого хода
     double find_first_best_turn(vector<vector<POS_T>> mtx, const bool color, const POS_T x, const POS_T y, size_t state,
                                 double alpha = -1)
     {
+        return find_best_turns_rec(mtx, color, state, alpha);
     }
 
+    // Рекурсивная функция для поиска лучших возможных ходов, использующая алгоритм альфа-бета отсечения
     double find_best_turns_rec(vector<vector<POS_T>> mtx, const bool color, const size_t depth, double alpha = -1,
                                double beta = INF + 1, const POS_T x = -1, const POS_T y = -1)
     {
+        // Проверяем условие об остановке рекурсии (максимальная глубина)
+        if (depth >= Max_depth) {
+            return calc_score(mtx, color); // Возвращаем оценку текущей позиции
+        }
+
+        if (color) { // Если текущий игрок максимизирующий
+            double max_eval = -INF;
+            find_turns(color); // Найти все возможные ходы для игрока
+            for (auto& turn : turns) {
+                auto new_state = make_turn(mtx, turn); // Применяем ход
+                double eval = find_best_turns_rec(new_state, !color, depth + 1, alpha, beta); // Рекурсивный вызов для следующего хода
+                max_eval = max(max_eval, eval); // Находим максимальную оценку
+                alpha = max(alpha, eval); // Обновляем альфу
+                if (beta <= alpha) { // Альфа-бета отсечение
+                    break;
+                }
+            }
+            return max_eval;
+
+        } else { // Если текущий игрок минимизирующий
+            double min_eval = INF;
+            find_turns(color); // Найти все возможные ходы для игрока
+            for (auto& turn : turns) {
+                auto new_state = make_turn(mtx, turn); // Применяем ход
+                double eval = find_best_turns_rec(new_state, !color, depth + 1, alpha, beta); // Рекурсивный вызов для следующего хода
+                min_eval = min(min_eval, eval); // Находим минимальную оценку
+                beta = min(beta, eval); // Обновляем бету
+                if (beta <= alpha) { // Альфа-бета отсечение
+                    break;
+                }
+            }
+            return min_eval;
+        }
     }
 
 public:
